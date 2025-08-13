@@ -1,60 +1,76 @@
-import { useState } from 'react';
-import { Form, Button, Card, Container, Alert } from 'react-bootstrap';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../firebase.config';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import { Form, Button, Container, Alert, Spinner } from "react-bootstrap";
+import { useDispatch, useSelector } from "react-redux";
+import { loginUser } from "../store/auth/authActions";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 export default function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { loading, error } = useSelector((state) => state.auth);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    setError('');
-
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      navigate('/admin'); // Redirect to admin panel after login
-    } catch (err) {
-      setError(err.message);
-    }
+    dispatch(loginUser({ email, password }))
+      .unwrap()
+      .then(() => {
+        toast.success("Logged in successfully");
+        navigate("/admin");
+      })
+      .catch(() => {});
   };
 
   return (
-    <Container className="d-flex align-items-center justify-content-center" style={{ height: '100vh' }}>
-      <Card style={{ minWidth: '400px' }}>
-        <Card.Body>
-          <h2 className="mb-4 text-center">Admin Login</h2>
-          {error && <Alert variant="danger">{error}</Alert>}
-          <Form onSubmit={handleSubmit}>
-            <Form.Group controlId="email" className="mb-3">
-              <Form.Control
-                type="email"
-                value={email}
-                placeholder='Enter email'
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </Form.Group>
-
-            <Form.Group controlId="password" className="mb-3">
-              <Form.Control
-                type="password"
-                value={password}
-                placeholder='Enter password'
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </Form.Group>
-
-            <Button type="submit" variant="primary" className="w-100">
-              Login
+    <Container
+      className="d-flex justify-content-center align-items-center"
+      style={{ minHeight: "100vh" }}
+    >
+      <div
+        style={{
+          width: "100%",
+          maxWidth: "400px",
+          padding: "30px",
+          border: "1px solid #ddd",
+          borderRadius: "10px",
+          boxShadow: "0px 4px 12px rgba(0,0,0,0.1)",
+          backgroundColor: "#fff",
+        }}
+      >
+        <h3 className="text-center mb-4">Admin Login</h3>
+        {error && <Alert variant="danger">{error}</Alert>}
+        <Form onSubmit={handleSubmit}>
+          <Form.Group className="mb-3">
+            <Form.Control
+              type="email"
+              value={email}
+              placeholder="Enter email"
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </Form.Group>
+          <Form.Group className="mb-4">
+            <Form.Control
+              type="password"
+              value={password}
+              placeholder="Enter password"
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </Form.Group>
+          <div className="d-flex justify-content-center">
+            <Button
+              type="submit"
+              disabled={loading}
+              style={{ minWidth: "120px" }}
+            >
+              {loading ? <Spinner size="sm" /> : "Login"}
             </Button>
-          </Form>
-        </Card.Body>
-      </Card>
+          </div>
+        </Form>
+      </div>
     </Container>
   );
 }
