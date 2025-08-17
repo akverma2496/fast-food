@@ -20,7 +20,9 @@ export default function Login() {
         toast.success("Logged in successfully");
         navigate("/admin");
       })
-      .catch(() => {});
+      .catch((err) => {
+        toast.error(`${err || "Invalid credentials"}`);
+      });
   };
 
   return (
@@ -40,7 +42,6 @@ export default function Login() {
         }}
       >
         <h3 className="text-center mb-4">Admin Login</h3>
-        {error && <Alert variant="danger">{error}</Alert>}
         <Form onSubmit={handleSubmit}>
           <Form.Group className="mb-3">
             <Form.Control
